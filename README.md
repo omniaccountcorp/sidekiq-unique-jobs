@@ -6,6 +6,7 @@
 * [Documentation](#documentation)
 * [Requirements](#requirements)
 * [Installation](#installation)
+* [Support Me](#support-me)
 * [General Information](#general-information)
 * [Options](#options)
    * [Lock Expiration](#lock-expiration)
@@ -64,6 +65,11 @@ And then execute:
 Or install it yourself as:
 
     $ gem install sidekiq-unique-jobs
+
+
+## Support Me
+
+Want to show me some ❤️ for the hard work I do on this gem? You can use the following PayPal link https://paypal.me/mhenrixon. Any amount is welcome and let me tell you it feels good to be appreciated. Even a dollar makes me super excited about all of this.
 
 ## General Information
 
