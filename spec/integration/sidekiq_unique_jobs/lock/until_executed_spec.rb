@@ -33,32 +33,37 @@ RSpec.describe SidekiqUniqueJobs::Lock::UntilExecuted, redis: :redis do
   describe '#execute' do
     context 'when process one has locked the job' do
       before do
-        expect(process_one.lock).to eq(jid_one)
+        process_one.lock
+      end
+
+      it 'has locked process_one' do
         expect(process_one.locked?).to eq(true)
       end
 
-      it 'process two cannot lock the job' do
+      it 'prevents process_two from locking' do
         expect(process_two.lock).to eq(nil)
-        expect(process_two.execute).to eq(nil)
         expect(process_two.locked?).to eq(false)
       end
 
-      context 'when worker raises an error' do
-        it 'keeps the lock' do
-          expect { process_one.execute { raise 'Hell' } }
-            .to raise_error('Hell')
-
-          expect(process_one.locked?).to eq(true)
-        end
-      end
-
       context 'when process_one executes the job' do
-        it 'the first client process should be unlocked' do
-          process_one.execute do
+        context 'and worker raises an error' do
+          it 'keeps the lock' do
+            expect { process_one.execute { raise 'Hell' } }
+              .to raise_error('Hell')
+
             expect(process_one.locked?).to eq(true)
+          end
+        end
+
+        it 'prevents process_two from locking' do
+          process_one.execute do
             expect(process_two.lock).to eq(nil)
             expect(process_two.locked?).to eq(false)
+          end
+        end
 
+        it 'prevents process_two from executing' do
+          process_one.execute do
             unset = true
             process_two.execute do
               unset = false
@@ -66,6 +71,17 @@ RSpec.describe SidekiqUniqueJobs::Lock::UntilExecuted, redis: :redis do
 
             expect(unset).to eq(true)
           end
+        end
+
+        it 'keeps being locked while executing' do
+          process_one.execute do
+            expect(process_one.locked?).to eq(true)
+          end
+        end
+
+        it 'unlocks process_one after executing' do
+          process_one.execute { }
+          expect(process_one.locked?).to eq(false)
         end
       end
     end
