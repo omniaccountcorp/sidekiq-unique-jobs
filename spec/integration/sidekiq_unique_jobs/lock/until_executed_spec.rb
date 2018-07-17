@@ -46,15 +46,6 @@ RSpec.describe SidekiqUniqueJobs::Lock::UntilExecuted, redis: :redis do
       end
 
       context 'when process_one executes the job' do
-        context 'and worker raises an error' do
-          it 'keeps the lock' do
-            expect { process_one.execute { raise 'Hell' } }
-              .to raise_error('Hell')
-
-            expect(process_one.locked?).to eq(true)
-          end
-        end
-
         it 'prevents process_two from locking' do
           process_one.execute do
             expect(process_two.lock).to eq(nil)
@@ -79,8 +70,15 @@ RSpec.describe SidekiqUniqueJobs::Lock::UntilExecuted, redis: :redis do
           end
         end
 
+        it 'keeps being locked when an error is raised' do
+          expect { process_one.execute { raise 'Hell' } }
+            .to raise_error('Hell')
+
+          expect(process_one.locked?).to eq(true)
+        end
+
         it 'unlocks process_one after executing' do
-          process_one.execute { }
+          process_one.execute {}
           expect(process_one.locked?).to eq(false)
         end
       end
